@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoPonto Digital - Recicle. Pontue. Transforme.</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        green: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .animate-bounce {
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+        
+        .game-item:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .progress-bar {
+            transition: width 1s linear;
+        }
+        
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .scroll-smooth {
+            scroll-behavior: smooth;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .modal {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 400px;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 scroll-smooth">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md z-50 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center cursor-pointer" onclick="scrollToSection('home')">
+                    <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center mr-3">
+                        <i class="ri-recycle-line text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-900 dark:text-white">EcoPonto</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="scrollToSection('home')" class="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium">Início</button>
+                    <button onclick="scrollToSection('como-funciona')" class="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium">Como Funciona</button>
+                    <button onclick="scrollToSection('localizacao')" class="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium">Onde Descartar</button>
+                    <button onclick="scrollToSection('ranking')" class="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium">Ranking</button>
+                    <button onclick="scrollToSection('jogo')" class="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium">Jogo</button>
+                    <button onclick="scrollToSection('faq')" class="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium">FAQ</button>
+<a href="login.html" class="bg-green-600 text-white hover:bg-green-700 px-6 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg whitespace-nowrap cursor-pointer inline-block text-center">Login/Cadastro</a>
+                </div>
+
+                <button class="md:hidden p-2" onclick="toggleMobileMenu()">
+                    <i class="ri-menu-line text-2xl text-gray-700 dark:text-gray-300"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed top-16 left-0 w-full bg-white dark:bg-gray-900 shadow-lg z-40 hidden md:hidden">
+        <div class="px-6 py-4 space-y-4">
+            <button onclick="scrollToSection('home')" class="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium py-2">Início</button>
+            <button onclick="scrollToSection('como-funciona')" class="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium py-2">Como Funciona</button>
+            <button onclick="scrollToSection('localizacao')" class="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium py-2">Onde Descartar</button>
+            <button onclick="scrollToSection('ranking')" class="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium py-2">Ranking</button>
+            <button onclick="scrollToSection('jogo')" class="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium py-2">Jogo</button>
+            <button onclick="scrollToSection('faq')" class="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer font-medium py-2">FAQ</button>
+            <button onclick="showLoginModal()" class="block w-full text-left bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer">Login/Cadastro</button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen bg-cover bg-center bg-no-repeat flex items-center pt-20" style="background-image: linear-gradient(rgba(34, 197, 94, 0.8), rgba(59, 130, 246, 0.6)), url('https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/37d42b3c-f43e-4749-9b2c-5ebc5d76c52c.png')">
+        <div class="w-full px-6 lg:px-8 py-20">
+            <div class="max-w-4xl">
+                <div class="text-left">
+                    <h1 class="text-5xl lg:text-6xl font-bold text-white mb-8 leading-tight">
+                        EcoPonto Digital
+                        <span class="block text-green-200">Recicle. Pontue. Transforme.</span>
+                    </h1>
+                    <p class="text-xl lg:text-2xl text-green-50 mb-12 max-w-2xl leading-relaxed">
+                        Encontre pontos de reciclagem próximos, descubra como descartar corretamente e ganhe pontos por cada ação sustentável!
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-6">
+                        <button onclick="scrollToSection('localizacao')" class="bg-white text-green-800 hover:bg-green-50 px-8 py-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105 shadow-lg whitespace-nowrap cursor-pointer">
+                            <i class="ri-map-pin-line mr-2"></i>Onde Descartar
+                        </button>
+                        <button onclick="scrollToSection('como-funciona')" class="border-2 border-white text-white hover:bg-white hover:text-green-800 px-8 py-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105 whitespace-nowrap cursor-pointer">
+                            <i class="ri-recycle-line mr-2"></i>Comece a Reciclar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+            <i class="ri-arrow-down-line text-3xl"></i>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="como-funciona" class="py-20 bg-gray-50 dark:bg-gray-900 transition-colors">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">Como Funciona o EcoPonto Digital</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Um processo simples e gamificado para tornar a reciclagem parte do seu dia a dia
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 cursor-pointer">
+                    <div class="w-16 h-16 bg-green-500 rounded-lg flex items-center justify-center mb-6 mx-auto">
+                        <i class="ri-search-line text-2xl text-white"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Encontre Pontos</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Use nosso mapa interativo para localizar pontos de reciclagem próximos à você.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 cursor-pointer">
+                    <div class="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center mb-6 mx-auto">
+                        <i class="ri-recycle-line text-2xl text-white"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Descarte Correto</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Separe seus materiais conforme nossas orientações e leve aos pontos indicados.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 cursor-pointer">
+                    <div class="w-16 h-16 bg-yellow-500 rounded-lg flex items-center justify-center mb-6 mx-auto">
+                        <i class="ri-medal-line text-2xl text-white"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Ganhe Pontos</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">A cada descarte registrado, você acumula pontos e sobe no ranking sustentável.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 cursor-pointer">
+                    <div class="w-16 h-16 bg-purple-500 rounded-lg flex items-center justify-center mb-6 mx-auto">
+                        <i class="ri-trophy-line text-2xl text-white"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Conquiste Prêmios</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Troque seus pontos por benefícios e ajude a construir um mundo mais verde.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-16">
+                <h3 class="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">O que Pode e Não Pode Descartar</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-blue-100 dark:bg-blue-900/30 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700">
+                        <div class="text-center mb-6">
+                            <div class="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <i class="ri-newspaper-line text-xl text-gray-700 dark:text-gray-300"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 dark:text-white">Papelão e Papel</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <h5 class="text-sm font-semibold text-green-700 dark:text-green-400 mb-2 flex items-center">
+                                    <i class="ri-check-line mr-1"></i>Aceito
+                                </h5>
+                                <ul class="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>• Jornais</li>
+                                    <li>• Revistas</li>
+                                    <li>• Caixas de papelão</li>
+                                    <li>• Papel de escritório</li>
+                                    <li>• Livros</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-2 flex items-center">
+                                    <i class="ri-close-line mr-1"></i>Não Aceito
+                                </h5>
+                                <ul class="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>• Papel higiênico</li>
+                                    <li>• Papel plastificado</li>
+                                    <li>• Papel carbono</li>
+                                    <li>• Papel parafinado</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-100 dark:bg-gray-900/30 p-6 rounded-xl border-2 border-gray-200 dark:border-gray-700">
+                        <div class="text-center mb-6">
+                            <div class="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <i class="ri-copper-coin-line text-xl text-gray-700 dark:text-gray-300"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 dark:text-white">Metal</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <h5 class="text-sm font-semibold text-green-700 dark:text-green-400 mb-2 flex items-center">
+                                    <i class="ri-check-line mr-1"></i>Aceito
+                                </h5>
+                                <ul class="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>• Latas de alumínio</li>
+                                    <li>• Latas de aço</li>
+                                    <li>• Tampas metálicas</li>
+                                    <li>• Fios de cobre</li>
+                                    <li>• Panelas velhas</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-2 flex items-center">
+                                    <i class="ri-close-line mr-1"></i>Não Aceito
+                                </h5>
+                                <ul class="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>• Metal enferrujado</li>
+                                    <li>• Latas com tinta</li>
+                                    <li>• Objetos com pilhas</li>
+                                    <li>• Metal contaminado</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-100 dark:bg-green-900/30 p-6 rounded-xl border-2 border-green-200 dark:border-green-700">
+                        <div class="text-center mb-6">
+                            <div class="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <i class="ri-goblet-line text-xl text-gray-700 dark:text-gray-300"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 dark:text-white">Vidro</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <h5 class="text-sm font-semibold text-green-700 dark:text-green-400 mb-2 flex items-center">
+                                    <i class="ri-check-line mr-1"></i>Aceito
+                                </h5>
+                                <ul class="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>• Garrafas de vidro</li>
+                                    <li>• Potes de conserva</li>
+                                    <li>• Frascos de perfume</li>
+                                    <li>• Copos de vidro</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-2 flex items-center">
+                                    <i class="ri-close-line mr-1"></i>Não Aceito
+                                </h5>
+                                <ul class="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>• Vidros quebrados</li>
+                                    <li>• Espelhos</li>
+                                    <li>• Lâmpadas</li>
+                                    <li>• Vidros temperados</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-100 dark:bg-yellow-900/30 p-6 rounded-xl border-2 border-yellow-200 dark:border-yellow-700">
+                        <div class="text-center mb-6">
+                            <div class="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <i class="ri-drop-line text-xl text-gray-700 dark:text-gray-300"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 dark:text-white">Plástico</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <h5 class="text-sm font-semibold text-green-700 dark:text-green-400 mb-2 flex items-center">
+                                    <i class="ri-check-line mr-1"></i>Aceito
+                                </h5>
+                                <ul class="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>• Garrafas PET</li>
+                                    <li>• Embalagens plásticas</li>
+                                    <li>• Sacolas plásticas</li>
+                                    <li>• Potes de iogurte</li>
+                                    <li>• Tampas plásticas</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-2 flex items-center">
+                                    <i class="ri-close-line mr-1"></i>Não Aceito
+                                </h5>
+                                <ul class="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>• Plástico sujo</li>
+                                    <li>• Isopor</li>
+                                    <li>• Plástico de brinquedos</li>
+                                    <li>• Plástico misturado</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="scrollToSection('localizacao')" class="bg-green-600 text-white hover:bg-green-700 px-8 py-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105 shadow-lg whitespace-nowrap cursor-pointer">
+                    <i class="ri-map-pin-line mr-2"></i>Encontrar Pontos de Reciclagem
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location Section -->
+    <section id="localizacao" class="py-20 bg-white dark:bg-gray-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">Onde Descartar Seus Materiais</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Encontre o ponto de reciclagem mais próximo e descubra quais materiais são aceitos
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-green-500 to-blue-500 p-6 rounded-xl text-white">
+                        <h3 class="text-xl font-bold mb-4 flex items-center">
+                            <i class="ri-map-pin-line mr-2"></i>Pontos Próximos a Você
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold">4</div>
+                                <div class="text-sm opacity-90">Pontos Ativos</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold">24h</div>
+                                <div class="text-sm opacity-90">Alguns Funcionam</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Lista de Pontos de Reciclagem -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl hover:shadow-lg transition-all cursor-pointer border-2 border-transparent hover:border-green-300 dark:hover:border-green-600" onclick="setActivePoint('point-1')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">EcoPonto Shopping Center Norte</h4>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm flex items-center mb-1">
+                                    <i class="ri-map-pin-line mr-2 text-green-600"></i>Av. Otto Baumgart, 500 - Vila Guilherme, SP
+                                </p>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm flex items-center">
+                                    <i class="ri-time-line mr-2 text-blue-600"></i>Seg a Sáb: 10h às 22h | Dom: 14h às 20h
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-green-600 dark:text-green-400 font-bold text-sm mb-1">2.5 km</div>
+                                <div class="flex items-center text-yellow-500">
+                                    <i class="ri-star-fill mr-1"></i>
+                                    <span class="text-gray-700 dark:text-gray-300 text-sm">4.8</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Papelão</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">Metal</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Vidro</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Plástico</span>
+                        </div>
+                        <div id="point-1" class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4 hidden">
+                            <div class="flex gap-3">
+                                <button class="flex-1 bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer">
+                                    <i class="ri-direction-line mr-2"></i>Como Chegar
+                                </button>
+                                <button class="flex-1 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer">
+                                    <i class="ri-phone-line mr-2"></i>Contato
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl hover:shadow-lg transition-all cursor-pointer border-2 border-transparent hover:border-green-300 dark:hover:border-green-600" onclick="setActivePoint('point-2')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Ponto de Coleta Lapa</h4>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm flex items-center mb-1">
+                                    <i class="ri-map-pin-line mr-2 text-green-600"></i>Rua Nossa Sra. da Lapa, 888 - Lapa, SP
+                                </p>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm flex items-center">
+                                    <i class="ri-time-line mr-2 text-blue-600"></i>Seg a Sex: 08h às 18h
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-green-600 dark:text-green-400 font-bold text-sm mb-1">5.1 km</div>
+                                <div class="flex items-center text-yellow-500">
+                                    <i class="ri-star-fill mr-1"></i>
+                                    <span class="text-gray-700 dark:text-gray-300 text-sm">4.5</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Papelão</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Vidro</span>
+                        </div>
+                        <div id="point-2" class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4 hidden">
+                            <div class="flex gap-3">
+                                <button class="flex-1 bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer">
+                                    <i class="ri-direction-line mr-2"></i>Como Chegar
+                                </button>
+                                <button class="flex-1 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer">
+                                    <i class="ri-phone-line mr-2"></i>Contato
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl hover:shadow-lg transition-all cursor-pointer border-2 border-transparent hover:border-green-300 dark:hover:border-green-600" onclick="setActivePoint('point-3')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Cooperativa de Reciclagem - Morumbi</h4>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm flex items-center mb-1">
+                                    <i class="ri-map-pin-line mr-2 text-green-600"></i>Av. Padre Guilherme, 1234 - Morumbi, SP
+                                </p>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm flex items-center">
+                                    <i class="ri-time-line mr-2 text-blue-600"></i>24 horas
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-green-600 dark:text-green-400 font-bold text-sm mb-1">10.3 km</div>
+                                <div class="flex items-center text-yellow-500">
+                                    <i class="ri-star-fill mr-1"></i>
+                                    <span class="text-gray-700 dark:text-gray-300 text-sm">4.9</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Papelão</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">Metal</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Vidro</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Plástico</span>
+                        </div>
+                        <div id="point-3" class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4 hidden">
+                            <div class="flex gap-3">
+                                <button class="flex-1 bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer">
+                                    <i class="ri-direction-line mr-2"></i>Como Chegar
+                                </button>
+                                <button class="flex-1 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer">
+                                    <i class="ri-phone-line mr-2"></i>Contato
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative w-full h-96 rounded-xl overflow-hidden shadow-lg">
+                    <iframe id="map-iframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.44391605332!2d-46.68725888497645!3d-23.55246718468779!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce59a7203b5f7b%3A0xc392d4c062c3e1b!2sAv.%20Otto%20Baumgart%2C%20500%20-%20Vila%20Guilherme%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2002051-000!5e0!3m2!1spt-BR!2sbr!4v1642188445781!5m2!1spt-BR!2sbr" class="absolute inset-0 w-full h-full border-none" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ranking Section -->
+    <section id="ranking" class="py-20 bg-gray-50 dark:bg-gray-900 transition-colors">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">Ranking de Recicladores</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Suba no ranking e mostre seu compromisso com o meio ambiente
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
+                <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Top 5 Recicladores</h3>
+                    <button class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-4 py-2 rounded-full text-sm font-semibold">Ver Completo</button>
+                </div>
+                
+                <ul class="space-y-6">
+                    <li class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xl font-bold text-green-600 dark:text-green-400 w-8">1.</span>
+                            <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 text-xl font-bold">
+                                                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Ana Paula</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">1250 pontos</p>
+                            </div>
+                        </div>
+                        <div class="w-24 h-2 bg-green-500 rounded-full progress-bar" style="width: 100%;"></div>
+                    </li>
+                    <li class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xl font-bold text-gray-700 dark:text-gray-300 w-8">2.</span>
+                            <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 text-xl font-bold">
+                                                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">João Silva</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">1050 pontos</p>
+                            </div>
+                        </div>
+                        <div class="w-24 h-2 bg-green-400 rounded-full progress-bar" style="width: 85%;"></div>
+                    </li>
+                    <li class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xl font-bold text-yellow-600 dark:text-yellow-400 w-8">3.</span>
+                            <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 text-xl font-bold">
+                                                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Mariana Costa</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">980 pontos</p>
+                            </div>
+                        </div>
+                        <div class="w-24 h-2 bg-green-300 rounded-full progress-bar" style="width: 78%;"></div>
+                    </li>
+                    <li class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-lg font-medium text-gray-700 dark:text-gray-300 w-8">4.</span>
+                            <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 text-xl font-bold">
+                                                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Carlos Santos</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">850 pontos</p>
+                            </div>
+                        </div>
+                        <div class="w-24 h-2 bg-green-200 rounded-full progress-bar" style="width: 68%;"></div>
+                    </li>
+                    <li class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-lg font-medium text-gray-700 dark:text-gray-300 w-8">5.</span>
+                            <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 text-xl font-bold">
+                                                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Isabela Lima</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">720 pontos</p>
+                            </div>
+                        </div>
+                        <div class="w-24 h-2 bg-green-100 rounded-full progress-bar" style="width: 58%;"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Game Section -->
+    <section id="jogo" class="py-20 bg-white dark:bg-gray-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">Jogue e Aprenda Reciclando</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Teste seus conhecimentos sobre separação de resíduos e divirta-se!
+                </p>
+            </div>
+
+            <div class="max-w-3xl mx-auto bg-gray-100 dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+                <div id="game-container" class="space-y-6">
+                    <div id="game-message" class="text-center text-xl font-bold text-gray-900 dark:text-white">Seu lixo está pronto para ser reciclado!</div>
+                    <div id="item-to-sort" class="flex items-center justify-center text-4xl p-8 bg-white dark:bg-gray-800 rounded-xl shadow-inner">
+                        <div id="item-emoji">📦</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="game-item text-center p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg shadow-md cursor-pointer" onclick="checkAnswer('papel')">
+                            <i class="ri-newspaper-line text-4xl text-blue-600"></i>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white mt-2">Papel</div>
+                        </div>
+                        <div class="game-item text-center p-4 bg-gray-100 dark:bg-gray-900/30 rounded-lg shadow-md cursor-pointer" onclick="checkAnswer('metal')">
+                            <i class="ri-copper-coin-line text-4xl text-gray-600"></i>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white mt-2">Metal</div>
+                        </div>
+                        <div class="game-item text-center p-4 bg-green-100 dark:bg-green-900/30 rounded-lg shadow-md cursor-pointer" onclick="checkAnswer('vidro')">
+                            <i class="ri-goblet-line text-4xl text-green-600"></i>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white mt-2">Vidro</div>
+                        </div>
+                        <div class="game-item text-center p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg shadow-md cursor-pointer" onclick="checkAnswer('plastico')">
+                            <i class="ri-drop-line text-4xl text-yellow-600"></i>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white mt-2">Plástico</div>
+                        </div>
+                    </div>
+
+                    <div id="game-status" class="text-center font-semibold mt-4">Pontuação: 0</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-20 bg-gray-50 dark:bg-gray-900 transition-colors">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">Perguntas Frequentes</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Respostas para as suas principais dúvidas sobre reciclagem e o EcoPonto Digital
+                </p>
+            </div>
+            <div class="max-w-4xl mx-auto space-y-6">
+                <!-- FAQ Item 1 -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Como posso começar a reciclar?</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Comece separando os materiais secos (plástico, papel, vidro e metal) dos úmidos. Lave as embalagens e compacte os itens para economizar espaço. Depois, utilize nosso mapa para encontrar o ponto de descarte mais próximo.</p>
+                </div>
+                <!-- FAQ Item 2 -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">O que acontece com os pontos que eu ganho?</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Seus pontos são acumulados no seu perfil e podem ser trocados por prêmios e benefícios futuros. Eles também definem a sua posição no ranking de recicladores.</p>
+                </div>
+                <!-- FAQ Item 3 -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Por que a reciclagem é importante?</h3>
+                    <p class="text-gray-700 dark:text-gray-300">A reciclagem ajuda a reduzir a quantidade de lixo em aterros sanitários, economiza energia na produção de novos materiais, diminui a poluição do ar e da água e ajuda a conservar recursos naturais.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contato" class="py-20 bg-white dark:bg-gray-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">Fale Conosco</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Envie suas dúvidas, sugestões ou feedbacks
+                </p>
+            </div>
+
+            <div class="max-w-2xl mx-auto bg-gray-50 dark:bg-gray-900 rounded-xl shadow-lg p-8">
+                <form class="space-y-6">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Seu Nome</label>
+                        <input type="text" id="name" name="name" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-green-500 focus:border-green-500 transition-colors" placeholder="Seu nome completo">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Seu Email</label>
+                        <input type="email" id="email" name="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-green-500 focus:border-green-500 transition-colors" placeholder="seu-email@exemplo.com">
+                    </div>
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sua Mensagem</label>
+                        <textarea id="message" name="message" rows="5" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-green-500 focus:border-green-500 transition-colors" placeholder="Digite sua mensagem aqui..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white hover:bg-green-700 px-8 py-4 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg">
+                        <i class="ri-mail-send-line mr-2"></i>Enviar Mensagem
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 dark:bg-gray-950 py-10">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 text-center text-gray-400">
+            <p>&copy; 2024 EcoPonto Digital. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Dark Mode Toggle -->
+    <button id="dark-mode-toggle" class="dark-mode-toggle bg-gray-800 text-white p-3 rounded-full shadow-lg transition-transform transform hover:scale-110">
+        <i class="ri-moon-line text-xl dark:hidden"></i>
+        <i class="ri-sun-line text-xl hidden dark:inline"></i>
+    </button>
+
+    <!-- Custom Modal for Login/Cadastro -->
+    <div id="login-modal" class="modal-overlay hidden" onclick="hideLoginModal(event)">
+        <div class="modal dark:bg-gray-800 dark:text-white" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-4">Em breve!</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-6">A funcionalidade de Login e Cadastro estará disponível em breve. Acompanhe nossas novidades!</p>
+            <button onclick="hideLoginModal()" class="bg-green-600 text-white hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors">Fechar</button>
+        </div>
+    </div>
+
+
+    <script>
+        // Data for points of interest
+        const points = {
+            'point-1': {
+                lat: -23.5524671,
+                lng: -46.6872588,
+                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.44391605332!2d-46.68725888497645!3d-23.55246718468779!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce59a7203b5f7b%3A0xc392d4c062c3e1b!2sAv.%20Otto%20Baumgart%2C%20500%20-%20Vila%20Guilherme%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2002051-000!5e0!3m2!1spt-BR!2sbr!4v1642188445781!5m2!1spt-BR!2sbr'
+            },
+            'point-2': {
+                lat: -23.528416,
+                lng: -46.703277,
+                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3658.07060372134!2d-46.70327708497693!3d-23.528416084698547!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94cef87a05d21a8d%3A0x6a0a7f14b3f8a0a0!2sR.%20Nossa%20Sra.%20da%20Lapa%2C%20888%20-%20Lapa%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2005072-000!5e0!3m2!1spt-BR!2sbr!4v1642188446123!5m2!1spt-BR!2sbr'
+            },
+            'point-3': {
+                lat: -23.5855732,
+                lng: -46.7099719,
+                mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.44391605332!2d-46.7099719846877!3d-23.58557328470003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce59954d000001%3A0x33b1e3678099e2e6!2sAv.%20Padre%20Guilherme%2C%201234%20-%20Morumbi%2C%20S%C3%A3o%20Paulo%20-%20SP!5e0!3m2!1spt-BR!2sbr!4v1642188446456!5m2!1spt-BR!2sbr'
+            }
+        };
+
+        // Function to toggle mobile menu
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Function to scroll to sections
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            }
+        }
+
+        // Function to show and hide the active point details
+        function setActivePoint(pointId) {
+            const allPoints = ['point-1', 'point-2', 'point-3'];
+            const mapIframe = document.getElementById('map-iframe');
+
+            allPoints.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (id === pointId) {
+                        element.classList.remove('hidden');
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                }
+            });
+
+            if (points[pointId]) {
+                mapIframe.src = points[pointId].mapUrl;
+            }
+        }
+
+        // Game data
+        const gameItems = [
+            { item: '📦', category: 'papel' },
+            { item: '🥫', category: 'metal' },
+            { item: '🍾', category: 'vidro' },
+            { item: '🥤', category: 'plastico' },
+            { item: '📰', category: 'papel' },
+            { item: '🔧', category: 'metal' },
+            { item: '🍷', category: 'vidro' },
+            { item: '🧴', category: 'plastico' }
+        ];
+
+        let score = 0;
+        let currentItem = {};
+
+        function startGame() {
+            score = 0;
+            document.getElementById('game-status').innerText = 'Pontuação: 0';
+            nextItem();
+        }
+
+        function nextItem() {
+            const randomIndex = Math.floor(Math.random() * gameItems.length);
+            currentItem = gameItems[randomIndex];
+            document.getElementById('item-emoji').innerText = currentItem.item;
+            document.getElementById('game-message').innerText = 'Para onde vai este item?';
+        }
+
+        function checkAnswer(category) {
+            if (category === currentItem.category) {
+                score += 10;
+                document.getElementById('game-message').innerText = 'Correto! 🎉';
+            } else {
+                score = Math.max(0, score - 5);
+                document.getElementById('game-message').innerText = 'Incorreto. Tente novamente! 🤔';
+            }
+            document.getElementById('game-status').innerText = 'Pontuação: ' + score;
+            setTimeout(nextItem, 1000);
+        }
+
+        // Dark mode toggle
+        const toggleButton = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+
+        toggleButton.addEventListener('click', () => {
+            body.classList.toggle('dark');
+        });
+
+        // Login Modal functions
+        function showLoginModal() {
+            const modal = document.getElementById('login-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function hideLoginModal(event) {
+            const modal = document.getElementById('login-modal');
+            if (event) {
+              if (event.target === modal) {
+                modal.classList.add('hidden');
+              }
+            } else {
+              modal.classList.add('hidden');
+            }
+        }
+
+        // Start game on page load
+        window.onload = startGame;
+    </script>
+</body>
+</html>

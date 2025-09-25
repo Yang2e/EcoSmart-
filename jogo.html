@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoPonto Runner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos gerais */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; background-color: #D1FAE5;
+            font-family: 'Press Start 2P', cursive; color: #1F2937;
+            text-align: center; overflow: hidden;
+        }
+        .container {
+            position: relative; width: 100%; max-width: 800px;
+            height: 100%; max-height: 400px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .screen {
+            background-color: rgba(255, 255, 255, 0.9); padding: 20px;
+            border-radius: 12px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            display: flex; flex-direction: column; align-items: center;
+            position: absolute; z-index: 10; width: 90%; max-width: 500px;
+        }
+        .screen h1 { font-size: 1.8em; margin-bottom: 20px; color: #10B981; }
+        #highscore-list p { font-size: 1.2em; color: #4B5563; }
+        button {
+            font-family: 'Press Start 2P', cursive; background-color: #10B981;
+            color: white; border: none; padding: 15px 20px; margin: 8px;
+            border-radius: 8px; cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            text-transform: uppercase; font-size: 0.9em;
+            width: 100%; max-width: 220px;
+        }
+        button:hover { background-color: #059669; transform: translateY(-2px); }
+        button.secondary { background-color: #6B7280; }
+        button.secondary:hover { background-color: #4B5563; }
+        button:disabled { background-color: #9CA3AF; cursor: not-allowed; }
+        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        #inventory, #background-menu, #highscore-screen, #shop-screen { display: none; }
+        .character-selection { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .character-card { padding: 15px; border: 3px solid #E5E7EB; border-radius: 8px; cursor: pointer; transition: border-color 0.3s, background-color 0.3s; }
+        .character-card:hover, .character-card.selected { border-color: #10B981; background-color: #ECFDF5; }
+        .character-card canvas { background-color: #F3F4F6; border-radius: 4px; }
+        #game-container { display: none; position: relative; width: 800px; height: 250px; border: 3px solid #4B5563; overflow: hidden; }
+        #gameCanvas { display: block; }
+        #gameOverMessage { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column; align-items: center; background-color: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; z-index: 20; }
+        #score-container { position: absolute; top: 10px; left: 10px; font-size: 16px; color: #1F2937; z-index: 5; background-color: rgba(255, 255, 255, 0.5); padding: 5px 10px; border-radius: 5px; text-align: left; }
+        .shop-item { border: 2px solid #ccc; border-radius: 8px; padding: 15px; margin: 10px 0; width: 100%; text-align: center; }
+        .shop-item h3 { margin-bottom: 10px; }
+        .shop-item p { margin-bottom: 15px; font-size: 0.8em; }
+        #coin-display { margin-bottom: 20px; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Menu Principal -->
+        <section class="screen" id="main-menu">
+            <h1>EcoPonto Runner</h1>
+            <button id="startButton">Iniciar Jogo</button>
+            <button id="shopButton">Loja</button>
+            <button id="inventoryButton">Personagens</button>
+            <button id="highscoreButton">Recordes</button>
+        </section>
+
+        <!-- Menu de Seleção de Cenário -->
+        <section class="screen" id="background-menu">
+            <h1>Escolha o Cenário</h1>
+            <div class="button-grid">
+                <button id="cityMode">Cidade</button>
+                <button id="natureMode">Natureza</button>
+                <button id="beachMode">Praia</button>
+                <button id="londonMode">Londres</button>
+                <button id="europeMode">Europa</button>
+            </div>
+            <button id="backToMainButton" class="secondary">Voltar</button>
+        </section>
+        
+        <!-- Tela de Recordes -->
+        <section class="screen" id="highscore-screen">
+            <h1>Recordes</h1>
+            <div id="highscore-list">
+                <p>Maior Pontuação: <span id="highscore-value">0</span></p>
+            </div>
+            <button id="backToMainFromHighscore" class="secondary">Voltar</button>
+        </section>
+
+        <!-- Loja -->
+        <section class="screen" id="shop-screen">
+            <h1>Loja</h1>
+            <div id="coin-display">Moedas: <span id="coin-total">0</span></div>
+            <div class="shop-item">
+                <h3>Escudo Protetor</h3>
+                <p>Sobreviva a uma colisão!</p>
+                <button id="buy-shield-btn" data-cost="50">Comprar (50 Moedas)</button>
+            </div>
+            <div class="shop-item">
+                <h3>Multiplicador 2x</h3>
+                <p>Dobre seus pontos na próxima partida.</p>
+                <button id="buy-multiplier-btn" data-cost="100">Comprar (100 Moedas)</button>
+            </div>
+            <button id="backToMainFromShop" class="secondary">Voltar</button>
+        </section>
+
+        <!-- Inventário -->
+        <section class="screen" id="inventory">
+            <h1>Escolha seu Herói</h1>
+            <div class="character-selection">
+                <div class="character-card" data-char="bianca"><canvas id="char-canvas-bianca" width="60" height="70"></canvas><p>Bianca</p></div>
+                <div class="character-card" data-char="beto"><canvas id="char-canvas-beto" width="60" height="70"></canvas><p>Beto</p></div>
+                <div class="character-card" data-char="kety"><canvas id="char-canvas-kety" width="60" height="70"></canvas><p>Kety</p></div>
+                <div class="character-card" data-char="verdeko"><canvas id="char-canvas-verdeko" width="60" height="70"></canvas><p>Verdeko</p></div>
+            </div>
+            <button id="closeInventory" class="secondary">Voltar</button>
+        </section>
+
+        <!-- Jogo -->
+        <div id="game-container">
+            <div id="score-container">
+                <div id="score">Score: 0</div>
+                <div id="highscore-display">HS: 0</div>
+                <div id="game-coin-display">Moedas: 0</div>
+            </div>
+            <canvas id="gameCanvas" width="800" height="250"></canvas>
+            <div id="gameOverMessage">
+                <h2>FIM DE JOGO</h2>
+                <p id="finalScore"></p>
+                <button id="restartButton">Reiniciar</button>
+                <button id="backToMenuButtonGameOver" class="secondary">Voltar ao Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ELEMENTOS DO DOM ---
+        const mainMenu = document.getElementById('main-menu');
+        const inventoryScreen = document.getElementById('inventory');
+        const backgroundMenu = document.getElementById('background-menu');
+        const highscoreScreen = document.getElementById('highscore-screen');
+        const shopScreen = document.getElementById('shop-screen');
+        const gameContainer = document.getElementById('game-container');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameOverMessage = document.getElementById('gameOverMessage');
+        const finalScoreElement = document.getElementById('finalScore');
+        const scoreElement = document.getElementById('score');
+        const highscoreDisplay = document.getElementById('highscore-display');
+        const highscoreValue = document.getElementById('highscore-value');
+        const coinTotalElement = document.getElementById('coin-total');
+        const gameCoinDisplay = document.getElementById('game-coin-display');
+
+        // Botões
+        const startButton = document.getElementById('startButton');
+        const inventoryButton = document.getElementById('inventoryButton');
+        const highscoreButton = document.getElementById('highscoreButton');
+        const shopButton = document.getElementById('shopButton');
+        const closeInventoryButton = document.getElementById('closeInventory');
+        const restartButton = document.getElementById('restartButton');
+        const characterCards = document.querySelectorAll('.character-card');
+        const cityModeButton = document.getElementById('cityMode');
+        const natureModeButton = document.getElementById('natureMode');
+        const beachModeButton = document.getElementById('beachMode');
+        const londonModeButton = document.getElementById('londonMode');
+        const europeModeButton = document.getElementById('europeMode');
+        const backToMainButton = document.getElementById('backToMainButton');
+        const backToMainFromHighscore = document.getElementById('backToMainFromHighscore');
+        const backToMainFromShop = document.getElementById('backToMainFromShop');
+        const backToMenuButtonGameOver = document.getElementById('backToMenuButtonGameOver');
+        const buyShieldBtn = document.getElementById('buy-shield-btn');
+        const buyMultiplierBtn = document.getElementById('buy-multiplier-btn');
+
+        // --- VARIÁVEIS DO JOGO ---
+        let score, highscore = 0, character, gravity, gameSpeed, isGameOver, background;
+        let obstacles = [], collectibles = [];
+        let keys = {};
+        let selectedBackground = 'nature';
+        let spawnTimer, coinSpawnTimer;
+        let totalCoins = 0;
+        let inventory = { shield: false, multiplier: false };
+        
+        // --- DEFINIÇÃO DOS PERSONAGENS ---
+        const characterDesigns = {};
+        Object.assign(characterDesigns, { 'bianca':(c,w,h)=>{const a="#FF80B3",e="#FADBC5",i="#3E4136",o="#80B380",l="#4D4D5A",t="#FFD700",r="#FFFFFF";c.fillStyle=a,c.fillRect(0,0,w,.4*h),c.fillRect(-5,10,5,.5*h),c.fillRect(w,10,5,.5*h),c.fillStyle=e,c.fillRect(5,10,w-10,.4*h),c.fillStyle=i,c.fillRect(15,20,5,10),c.fillRect(w-20,20,5,10),c.fillStyle=o,c.fillRect(5,.5*h,w-10,.35*h),c.fillRect(-5,.5*h,10,20),c.fillRect(w-5,.5*h,10,20),c.fillStyle=l,c.fillRect(10,.85*h,w-20,.15*h),c.fillStyle=r,c.fillRect(w-15,5,5,5),c.fillRect(w-10,0,5,5),c.fillRect(w-5,5,5,5),c.fillRect(w-10,10,5,5),c.fillStyle=t,c.fillRect(w-10,5,5,5)}, 'beto':(c,w,h)=>{const a="#4A235A",e="#F5CBA7",i="#4A235A",o="#FFFFFF",l="#808B96",t="#212F3D";c.fillStyle=a,c.fillRect(0,0,w,.4*h),c.fillStyle=e,c.fillRect(5,15,w-10,.4*h),c.fillRect(-5,.55*h,5,.2*h),c.fillRect(w,.55*h,5,.2*h),c.fillStyle=i,c.fillRect(15,25,5,5),c.fillRect(w-20,25,5,5),c.fillStyle=o,c.fillRect(0,.55*h,w,.3*h),c.fillStyle=l,c.fillRect(15,.55*h,w-30,.15*h),c.fillStyle=t,c.fillRect(5,.85*h,w-10,.15*h)}, 'kety':(c,w,h)=>{const a="#A93226",e="#D35400",i="#4A235A",o="#17202A",l="#5B2C6F",t="#AF7AC5";c.fillStyle=a,c.fillRect(0,0,w,.5*h),c.fillRect(-5,10,5,.5*h),c.fillRect(w,10,5,.5*h),c.fillStyle=e,c.fillRect(5,15,w-10,.4*h),c.fillRect(-5,.55*h,5,.2*h),c.fillRect(w,.55*h,5,.2*h),c.fillStyle=i,c.fillRect(15,25,5,5),c.fillRect(w-20,25,5,5),c.fillStyle=o,c.fillRect(5,.55*h,w-10,.25*h),c.fillStyle=l,c.fillRect(5,.8*h,w-10,.2*h),c.fillStyle=t,c.fillRect(5,.85*h,w-10,2),c.fillRect(15,.8*h,2,.2*h),c.fillRect(w-17,.8*h,2,.2*h)}, 'verdeko':(c,w,h)=>{const a="#A7F3D0",e="#34D399",i="#FFFFFF",o="#4B5563";c.fillStyle=e,c.fillRect(5,10,w-10,h-10),c.fillRect(15,0,5,10),c.fillRect(w-20,0,5,10),c.fillStyle=a,c.fillRect(10,15,w-20,h-20),c.fillRect(17,5,5,5),c.fillRect(w-22,5,5,5),c.fillStyle=o,c.fillRect(15,25,5,10),c.fillRect(w-20,25,5,10),c.fillStyle=i,c.fillRect(15,40,w-30,3)} });
+        let selectedCharacter = 'bianca';
+
+        // --- CLASSES DO JOGO ---
+        class Character {
+            constructor(x, y, w, h) { this.x=x;this.y=y;this.w=w;this.h=h;this.dy=0;this.jumpForce=15;this.grounded=false;this.jumpTimer=0; this.hasShield = false; }
+            Animate() { (keys['Space']||keys['ArrowUp'])&&this.grounded?this.Jump():this.jumpTimer=0;this.y+=this.dy;this.y+this.h<canvas.height?(this.dy+=gravity,this.grounded=false):(this.dy=0,this.grounded=true,this.y=canvas.height-this.h);this.Draw(); }
+            Jump() { if(this.grounded&&0===this.jumpTimer){this.jumpTimer=1;this.dy=-this.jumpForce;} }
+            Draw() { ctx.save();ctx.translate(this.x,this.y);characterDesigns[selectedCharacter](ctx,this.w,this.h); if(this.hasShield){ ctx.fillStyle = 'rgba(52, 152, 219, 0.4)'; ctx.beginPath(); ctx.arc(this.w/2, this.h/2, this.w/2 + 10, 0, Math.PI*2); ctx.fill(); } ctx.restore(); }
+        }
+
+        class Obstacle {
+            constructor(x, y, w, h) { this.x=x;this.y=y;this.w=w;this.h=h;this.dx=-gameSpeed; }
+            Update() { this.x+=this.dx;this.Draw();this.dx=-gameSpeed; }
+            Draw() { const a="#374151",e="#9CA3AF",i="#D1D5DB",o="#E5E7EB",l=this.w,t=this.h,r=this.x,c=this.y;ctx.save();ctx.fillStyle=a;ctx.fillRect(r+.1*l,c, .8*l,.15*t);ctx.fillStyle=i;ctx.fillRect(r+.15*l,c+.02*t,.7*l,.11*t);ctx.fillStyle=a;ctx.fillRect(r+.3*l,c-.05*t,.4*l,.05*t);ctx.fillStyle=a;ctx.fillRect(r,c+.15*t,l,.85*t);ctx.fillStyle=i;ctx.fillRect(r+.05*l,c+.15*t,.9*l,.8*t);ctx.fillStyle=o;ctx.fillRect(r+.2*l,c+.2*t,.1*l,.7*t);ctx.fillRect(r+.45*l,c+.2*t,.1*l,.7*t);ctx.fillRect(r+.7*l,c+.2*t,.1*l,.7*t);ctx.fillStyle=e;ctx.fillRect(r+.15*l,c+.2*t,.05*l,.7*t);ctx.fillRect(r+.4*l,c+.2*t,.05*l,.7*t);ctx.fillRect(r+.65*l,c+.2*t,.05*l,.7*t);ctx.fillRect(r+.8*l,c+.2*t,.05*l,.7*t);ctx.restore(); }
+        }
+
+        class Collectible {
+            constructor(x, y, radius) { this.x=x;this.y=y;this.radius=radius;this.dx=-gameSpeed; }
+            Update() { this.x+=this.dx; this.Draw(); this.dx=-gameSpeed; }
+            Draw() { ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill(); }
+        }
+        
+        class Background { /* ...código do background... */ constructor(){this.groundHeight=30,this.scenery=[],this.cars=[],this.backgroundOffset=0,this.generateScenery()}generateScenery(){this.scenery=[],this.cars=[];let e=0,t=50;if(["city","london","europe"].includes(selectedBackground))for(;t<2*canvas.width;)this.cars.push({x:t,y:canvas.height-this.groundHeight-25,w:50,h:20,color:["#e74c3c","#3498db","#95a5a6"][RandomIntInRange(0,2)]}),t+=RandomIntInRange(200,500);for(;e<3*canvas.width;){let t;"city"===selectedBackground?(t={type:"building",w:RandomIntInRange(40,90),h:RandomIntInRange(50,150),color:["#566573","#2C3E50","#212F3D"][RandomIntInRange(0,2)]},t.x=e,t.y=canvas.height-t.h-this.groundHeight,e+=t.w+RandomIntInRange(10,30)):"nature"===selectedBackground?(t={type:Math.random()>.5?"tree":"rock",size:RandomIntInRange(15,40)},t.x=e,e+=RandomIntInRange(150,300)):"beach"===selectedBackground?(t={type:"palm",h:RandomIntInRange(40,80)},t.x=e,e+=RandomIntInRange(200,350)):"london"===selectedBackground?(t={type:["bus","booth","bigben"][RandomIntInRange(0,2)],x:e},e+=RandomIntInRange(250,400)):"europe"===selectedBackground&&(t={type:"euro_building",w:RandomIntInRange(50,100),h:RandomIntInRange(60,140),color:["#D2B48C","#BC8F8F","#A0522D"][RandomIntInRange(0,2)]},t.x=e,t.y=canvas.height-t.h-this.groundHeight,e+=t.w+RandomIntInRange(5,20)),this.scenery.push(t)}}draw(){this.backgroundOffset-=.2*gameSpeed,this.backgroundOffset<=-2*canvas.width&&(this.backgroundOffset=0);let e="#D1FAE5",t="#5D4037";"city"===selectedBackground?(e="#87CEEB",t="#6B7280"):"beach"===selectedBackground?(e="#87CEFA",t="#F0E68C"):"london"===selectedBackground?(e="#B0C4DE",t="#696969"):"europe"===selectedBackground&&(e="#F0E68C",t="#8B4513"),ctx.fillStyle=e,ctx.fillRect(0,0,canvas.width,canvas.height),"beach"===selectedBackground&&(ctx.fillStyle="#1E90FF",ctx.fillRect(0,canvas.height-this.groundHeight-40,canvas.width,40)),this.scenery.forEach(e=>{const t=e.x+this.backgroundOffset;this.drawSceneryItem(e,t),this.drawSceneryItem(e,t+3*canvas.width)}),this.cars.forEach(e=>{e.x-=.8*gameSpeed,e.x+e.w<0&&(e.x=canvas.width+RandomIntInRange(100,300)),this.drawCar(e)}),ctx.fillStyle=t,ctx.fillRect(0,canvas.height-this.groundHeight,canvas.width,this.groundHeight)}drawCar(e){ctx.fillStyle=e.color,ctx.fillRect(e.x,e.y,e.w,e.h),ctx.fillStyle="#bdc3c7",ctx.fillRect(e.x+10,e.y-10,e.w-20,10)}drawSceneryItem(e,t){switch(e.type){case"building":ctx.fillStyle=e.color,ctx.fillRect(t,e.y,e.w,e.h);break;case"tree":ctx.fillStyle="#6D4C41",ctx.fillRect(t,canvas.height-this.groundHeight-e.size,e.size/3,e.size),ctx.fillStyle="#10B981",ctx.beginPath(),ctx.arc(t+e.size/6,canvas.height-this.groundHeight-e.size,e.size/1.5,0,2*Math.PI),ctx.fill();break;case"rock":ctx.fillStyle="#9CA3AF",ctx.beginPath(),ctx.arc(t,canvas.height-this.groundHeight,e.size,0,Math.PI),ctx.fill();break;case"palm":ctx.fillStyle="#8B4513",ctx.fillRect(t,canvas.height-this.groundHeight-e.h,8,e.h),ctx.fillStyle="#228B22";for(let s=0;s<5;s++)ctx.beginPath(),ctx.ellipse(t+4,canvas.height-this.groundHeight-e.h,30,10,s/4*Math.PI,0,2*Math.PI),ctx.fill();break;case"bus":ctx.fillStyle="#DC143C",ctx.fillRect(t,canvas.height-this.groundHeight-50,80,40),ctx.fillStyle="#000000",ctx.fillRect(t,canvas.height-this.groundHeight-60,80,10);break;case"booth":ctx.fillStyle="#DC143C",ctx.fillRect(t,canvas.height-this.groundHeight-60,25,60);break;case"bigben":ctx.fillStyle="#696969",ctx.fillRect(t,canvas.height-this.groundHeight-150,20,150);break;case"euro_building":ctx.fillStyle=e.color,ctx.fillRect(t,e.y,e.w,e.h),ctx.fillStyle="#F5DEB3",ctx.fillRect(t,e.y,e.w,10)}}}
+
+        // --- FUNÇÕES DO JOGO ---
+        function SpawnObstacle() {
+            const size = RandomIntInRange(30, 70);
+            obstacles.push(new Obstacle(canvas.width + size, canvas.height - size, size * 0.8, size));
+        }
+
+        function SpawnCoin() {
+            const yPos = [canvas.height - 80, canvas.height - 120][RandomIntInRange(0,1)];
+            collectibles.push(new Collectible(canvas.width + 15, yPos, 12));
+        }
+
+        function RandomIntInRange(min, max) {
+            return Math.round(Math.random() * (max - min) + min);
+        }
+
+        function StartGame() {
+            backgroundMenu.style.display = 'none';
+            gameContainer.style.display = 'block';
+            gameOverMessage.style.display = 'none';
+            isGameOver = false;
+            obstacles = []; collectibles = []; score = 0;
+            gameSpeed = 4; gravity = 1;
+            spawnTimer = 120; coinSpawnTimer = 90;
+
+            character = new Character(25, canvas.height - 150, 50, 60);
+            if (inventory.shield) {
+                character.hasShield = true;
+                inventory.shield = false; // Usa o escudo
+                saveData();
+            }
+            background = new Background();
+            requestAnimationFrame(Update);
+        }
+
+        function Update() {
+            if (isGameOver) return;
+            requestAnimationFrame(Update);
+            background.draw();
+
+            // Spawners
+            spawnTimer--;
+            if (spawnTimer <= 0) { SpawnObstacle(); spawnTimer = RandomIntInRange(90, 150); }
+            coinSpawnTimer--;
+            if (coinSpawnTimer <= 0) { SpawnCoin(); coinSpawnTimer = RandomIntInRange(100, 200); }
+
+            // Update Obstáculos
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let o = obstacles[i];
+                if (o.x + o.w < 0) { obstacles.splice(i, 1); continue; }
+                if (character.x < o.x + o.w && character.x + character.w > o.x && character.y < o.y + o.h && character.y + character.h > o.y) {
+                    if (character.hasShield) {
+                        character.hasShield = false;
+                        obstacles.splice(i, 1);
+                    } else {
+                        EndGame(); return;
+                    }
+                }
+                o.Update();
+            }
+
+            // Update Colecionáveis (Moedas)
+            for (let i = collectibles.length - 1; i >= 0; i--) {
+                let c = collectibles[i];
+                if (c.x + c.radius < 0) { collectibles.splice(i, 1); continue; }
+                const dist = Math.hypot(character.x + character.w/2 - c.x, character.y + character.h/2 - c.y);
+                if (dist < character.w/2 + c.radius) {
+                    totalCoins++;
+                    updateCoinDisplay();
+                    collectibles.splice(i, 1);
+                }
+                c.Update();
+            }
+
+            character.Animate();
+            const scoreMultiplier = inventory.multiplier ? 2 : 1;
+            score += scoreMultiplier;
+            scoreElement.textContent = "Score: " + score + (scoreMultiplier > 1 ? " (x2)" : "");
+        }
+
+        function EndGame() {
+            isGameOver = true;
+            if (inventory.multiplier) { // Desativa o multiplicador após o uso
+                inventory.multiplier = false;
+            }
+            saveData();
+            if (score > highscore) {
+                highscore = score;
+                updateHighscoreDisplay();
+            }
+            finalScoreElement.textContent = `Sua pontuação: ${score}`;
+            gameOverMessage.style.display = 'flex';
+        }
+        
+        // --- LÓGICA DOS MENUS E DADOS ---
+        function showMenu(menu) {
+            mainMenu.style.display = 'none'; inventoryScreen.style.display = 'none';
+            backgroundMenu.style.display = 'none'; highscoreScreen.style.display = 'none';
+            shopScreen.style.display = 'none'; gameContainer.style.display = 'none';
+            menu.style.display = 'flex';
+        }
+
+        function saveData() {
+            localStorage.setItem('ecoRunnerHighscore', highscore);
+            localStorage.setItem('ecoRunnerCoins', totalCoins);
+            localStorage.setItem('ecoRunnerInventory', JSON.stringify(inventory));
+        }
+
+        function loadData() {
+            highscore = localStorage.getItem('ecoRunnerHighscore') || 0;
+            totalCoins = parseInt(localStorage.getItem('ecoRunnerCoins') || 0);
+            inventory = JSON.parse(localStorage.getItem('ecoRunnerInventory') || '{"shield":false, "multiplier":false}');
+        }
+
+        function updateHighscoreDisplay() {
+            highscoreDisplay.textContent = "HS: " + highscore;
+            highscoreValue.textContent = highscore;
+        }
+
+        function updateCoinDisplay() {
+            coinTotalElement.textContent = totalCoins;
+            gameCoinDisplay.textContent = "Moedas: " + totalCoins;
+        }
+
+        function updateShop() {
+            updateCoinDisplay();
+            buyShieldBtn.disabled = inventory.shield;
+            buyShieldBtn.textContent = inventory.shield ? "Comprado" : `Comprar (${buyShieldBtn.dataset.cost} Moedas)`;
+            buyMultiplierBtn.disabled = inventory.multiplier;
+            buyMultiplierBtn.textContent = inventory.multiplier ? "Comprado" : `Comprar (${buyMultiplierBtn.dataset.cost} Moedas)`;
+        }
+        
+        function drawCharacterPreviews() {
+            for (const charName in characterDesigns) {
+                const charCanvas = document.getElementById(`char-canvas-${charName}`);
+                if (charCanvas) {
+                    const charCtx = charCanvas.getContext('2d');
+                    charCtx.clearRect(0, 0, charCanvas.width, charCanvas.height);
+                    charCtx.save(); charCtx.translate(5, 5);
+                    characterDesigns[charName](charCtx, 50, 60);
+                    charCtx.restore();
+                }
+            }
+            document.querySelector('.character-card.selected')?.classList.remove('selected');
+            document.querySelector(`.character-card[data-char="${selectedCharacter}"]`).classList.add('selected');
+        }
+
+        // --- EVENT LISTENERS ---
+        startButton.addEventListener('click', () => showMenu(backgroundMenu));
+        inventoryButton.addEventListener('click', () => showMenu(inventoryScreen));
+        highscoreButton.addEventListener('click', () => showMenu(highscoreScreen));
+        shopButton.addEventListener('click', () => { updateShop(); showMenu(shopScreen); });
+        closeInventoryButton.addEventListener('click', () => showMenu(mainMenu));
+        backToMainButton.addEventListener('click', () => showMenu(mainMenu));
+        backToMainFromHighscore.addEventListener('click', () => showMenu(mainMenu));
+        backToMainFromShop.addEventListener('click', () => showMenu(mainMenu));
+        restartButton.addEventListener('click', StartGame);
+        backToMenuButtonGameOver.addEventListener('click', () => { saveData(); showMenu(mainMenu); });
+        
+        buyShieldBtn.addEventListener('click', () => {
+            const cost = parseInt(buyShieldBtn.dataset.cost);
+            if (totalCoins >= cost && !inventory.shield) {
+                totalCoins -= cost; inventory.shield = true; updateShop(); saveData();
+            }
+        });
+        buyMultiplierBtn.addEventListener('click', () => {
+            const cost = parseInt(buyMultiplierBtn.dataset.cost);
+            if (totalCoins >= cost && !inventory.multiplier) {
+                totalCoins -= cost; inventory.multiplier = true; updateShop(); saveData();
+            }
+        });
+        
+        [cityModeButton, natureModeButton, beachModeButton, londonModeButton, europeModeButton].forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                selectedBackground = e.target.id.replace('Mode', '');
+                StartGame();
+            });
+        });
+        
+        characterCards.forEach(card => {
+            card.addEventListener('click', () => { selectedCharacter = card.dataset.char; drawCharacterPreviews(); });
+        });
+
+        document.addEventListener('keydown', (evt) => { keys[evt.code] = true; });
+        document.addEventListener('keyup', (evt) => { keys[evt.code] = false; });
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); keys['Space'] = true; });
+        canvas.addEventListener('touchend', (e) => { e.preventDefault(); keys['Space'] = false; });
+        
+        // --- INICIALIZAÇÃO ---
+        window.onload = () => {
+            loadData();
+            showMenu(mainMenu);
+            drawCharacterPreviews();
+            updateHighscoreDisplay();
+            updateCoinDisplay();
+        };
+
+    </script>
+</body>
+</html>
